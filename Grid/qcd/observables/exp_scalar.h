@@ -36,13 +36,21 @@ namespace QCD {
 struct ExpScalarParameters : Serializable {
     GRID_SERIALIZABLE_CLASS_MEMBERS(ExpScalarParameters,
     double, a)
-
+    
+    std::string obsname = "";
+    
     ExpScalarParameters(double _a = 0.0):a(_a){}
 
     template < class ReaderClass >
     ExpScalarParameters(Reader<ReaderClass>& Reader){
         read(Reader, "ExpScalar", *this);  
-    }  
+    }
+    
+    template < class ReaderClass >
+    ExpScalarParameters(Reader<ReaderClass>& Reader, std::string obsname_){
+        obsname = obsname_;
+        read(Reader, "ExpScalar"+obsname, *this);
+    }
 };
 
 template <class Impl>
@@ -67,7 +75,7 @@ class ExpScalarLogger : public HmcObservable<typename Impl::Field> {
 
     std::cout << GridLogMessage
         << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
-        << "ExpScalar: [ " << traj << " ] "<< e << std::endl;
+        << "ExpScalar" << Pars.obsname << ": [ " << traj << " ] "<< e << std::endl;
 
     std::cout.precision(def_prec);
 
