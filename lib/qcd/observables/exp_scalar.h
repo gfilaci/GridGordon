@@ -61,7 +61,7 @@ class ExpScalarLogger : public HmcObservable<typename Impl::Field> {
                           GridSerialRNG &sRNG,
                           GridParallelRNG &pRNG) {
 
-    double e = sum(trace(exp(Pars.a*U)));
+    double e = sum(trace(exp(Pars.a*U))) / U._grid->gSites();;
 
     int def_prec = std::cout.precision();
 
