@@ -32,22 +32,28 @@
 
 namespace Grid {
 
+    /*
+     Using action
+     S = 1/(16 pi) (Dmu phi)^2 + 2 mu cosh(bphi)
+     */
+    
 template <class Impl>
 class shGordonAction : public QCD::Action<typename Impl::Field> {
  public:
     INHERIT_FIELD_TYPES(Impl);
 
  private:
-    RealD mass_square;
-    RealD g;
+    RealD mu_param;
+    RealD b_param;
+    const RealD inveightpi = 1. / 8. / M_PI;
 
  public:
-    shGordonAction(RealD ms, RealD g) : mass_square(ms), g(g) {}
+    shGordonAction(RealD mu_, RealD b_) : mu_param(mu_), b_param(b_) {}
 
     virtual std::string LogParameters() {
       std::stringstream sstream;
-      sstream << GridLogMessage << "[shGordonAction] g           : " << g           << std::endl;
-      sstream << GridLogMessage << "[shGordonAction] mass_square : " << mass_square << std::endl;
+      sstream << GridLogMessage << "[shGordonAction] mu     : " << mu_param << std::endl;
+      sstream << GridLogMessage << "[shGordonAction] b      : " << b_param  << std::endl;
       return sstream.str();
     }
     virtual std::string action_name() {return "shGordonAction";}
@@ -55,19 +61,19 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
     virtual void refresh(const Field &U, GridParallelRNG &pRNG) {}  // noop as no pseudoferms
 
     virtual RealD S(const Field &phi) {
-      return QCD::Nd * ScalarObs<Impl>::sumphisquared(phi) + ScalarObs<Impl>::sumphider(phi) + 0.5*mass_square/(g*g)*sum(trace(exp(g*phi) + exp(-g*phi)))   ;
+      return QCD::Nd * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * sum(trace(exp(b_param*phi) + exp(-b_param*phi)))   ;
     };
 
     virtual void deriv(const Field &phi,
                        Field &force) {
         //std::cout << GridLogDebug << "Force total before :\n" << force << std::endl;
         Field tmp(phi._grid);
-        tmp = 2.0*QCD::Nd*phi;
+        tmp = 2.0 * QCD::Nd*phi;
         for (int mu = 0; mu < QCD::Nd; mu++) tmp -= Cshift(phi, mu, 1) + Cshift(phi, mu, -1);
-
+        tmp = inveightpi * tmp;
 
         //std::cout << GridLogDebug << "Phi norm : " << norm2(phi) << std::endl;
-        force += tmp + 0.5*mass_square/g*(exp(g*phi) - exp(-g*phi));
+        force += tmp + b_param * mu_param * (exp(b_param*phi) - exp(-b_param*phi));
         //std::cout << GridLogDebug << "Force tmp :\n" << tmp << std::endl;
         //std::cout << GridLogDebug << "Force total after :\n" << force << std::endl;
     }

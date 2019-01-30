@@ -31,8 +31,8 @@ namespace Grid {
 class ScalarActionParameters : Serializable {
  public:
   GRID_SERIALIZABLE_CLASS_MEMBERS(ScalarActionParameters,
-    double, mass_squared,
-    double, g);
+    double, mu,
+    double, b);
 
     template <class ReaderClass >
   ScalarActionParameters(Reader<ReaderClass>& Reader){
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
   // Real Scalar sh-Gordon action
   ScalarActionParameters SPar(Reader);
-  shGordonActionR Saction(SPar.mass_squared, SPar.g);
+  shGordonActionR Saction(SPar.mu, SPar.b);
 
   // Collect actions
   ActionLevel<shGordonActionR::Field, ScalarFields> Level1(1);
