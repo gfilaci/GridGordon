@@ -40,6 +40,8 @@ struct ExpScalarParameters : Serializable {
     std::string obsname = "";
     
     ExpScalarParameters(double _a = 0.0):a(_a){}
+    
+    ExpScalarParameters(double _a, std::string _obsname): a(_a), obsname(_obsname) {}
 
     template < class ReaderClass >
     ExpScalarParameters(Reader<ReaderClass>& Reader){
