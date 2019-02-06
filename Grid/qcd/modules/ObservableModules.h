@@ -107,6 +107,20 @@ class ExpScalarMod: public ObservableModule<ExpScalarLogger<Impl>, ExpScalarPara
 };
 
 template < class Impl >
+class TwoPointMod: public ObservableModule<TwoPointLogger<Impl>, TwoPointParameters>{
+    typedef ObservableModule<TwoPointLogger<Impl>, TwoPointParameters> ObsBase;
+    using ObsBase::ObsBase; // for constructors
+    
+    // acquire resource
+    virtual void initialize(){
+        this->ObservablePtr.reset(new TwoPointLogger<Impl>(this->Par_));
+    }
+public:
+    TwoPointMod(TwoPointParameters P): ObsBase(P){}
+    TwoPointMod():ObsBase(){};
+};
+    
+template < class Impl >
 class PolyakovMod: public ObservableModule<PolyakovLogger<Impl>, NoParameters>{
   typedef ObservableModule<PolyakovLogger<Impl>, NoParameters> ObsBase;
   using ObsBase::ObsBase; // for constructors

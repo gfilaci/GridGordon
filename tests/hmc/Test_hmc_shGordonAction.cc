@@ -95,6 +95,10 @@ int main(int argc, char **argv) {
   typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
   ExpScalarParameters ExpParams(Reader);
   TheHMC.Resources.AddObservable<ExpObs>(ExpParams);
+  
+  typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
+  TwoPointParameters TwoPointParams(Reader);
+  TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
   ///////////////////////////////////////////
 
   // Real Scalar sh-Gordon action
