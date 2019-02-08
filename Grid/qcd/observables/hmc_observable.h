@@ -48,5 +48,6 @@ class HmcObservable {
 #include "polyakov_loop.h"
 #include "exp_scalar.h"
 #include "two_point.h"
+#include "vev.h"
 
 #endif  //  HMC_OBSERVABLE_H

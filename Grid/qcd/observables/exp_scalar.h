@@ -87,4 +87,4 @@ class ExpScalarLogger : public HmcObservable<typename Impl::Field> {
 }  // namespace QCD
 }  // namespace Grid
 
-#endif  // HMC_PLAQUETTE_H
+#endif  // HMC_EXP_SCALAR_H

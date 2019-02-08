@@ -111,4 +111,4 @@ class TwoPointLogger : public HmcObservable<typename Impl::Field> {
 }  // namespace QCD
 }  // namespace Grid
 
-#endif  // HMC_PLAQUETTE_H
+#endif  // HMC_TWO_POINT_H

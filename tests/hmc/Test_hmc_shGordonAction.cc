@@ -99,6 +99,9 @@ int main(int argc, char **argv) {
   typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
   TwoPointParameters TwoPointParams(Reader);
   TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
+    
+  typedef VevMod<HMCWrapper::ImplPolicy> VevObs;
+  TheHMC.Resources.AddObservable<VevObs>();
   ///////////////////////////////////////////
 
   // Real Scalar sh-Gordon action

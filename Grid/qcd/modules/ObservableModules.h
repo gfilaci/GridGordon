@@ -119,7 +119,20 @@ public:
     TwoPointMod(TwoPointParameters P): ObsBase(P){}
     TwoPointMod():ObsBase(){};
 };
+
+template < class Impl >
+class VevMod: public ObservableModule<VevLogger<Impl>, NoParameters>{
+    typedef ObservableModule<VevLogger<Impl>, NoParameters> ObsBase;
+    using ObsBase::ObsBase; // for constructors
     
+    // acquire resource
+    virtual void initialize(){
+        this->ObservablePtr.reset(new VevLogger<Impl>());
+    }
+public:
+    VevMod(): ObsBase(NoParameters()){}
+};
+
 template < class Impl >
 class PolyakovMod: public ObservableModule<PolyakovLogger<Impl>, NoParameters>{
   typedef ObservableModule<PolyakovLogger<Impl>, NoParameters> ObsBase;
