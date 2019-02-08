@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     std::cout << "Incorrect dimension of the mpi grid\n. Expected dim="<< Ndimensions << std::endl;
     exit(1);
   }
-  ScalarGrid.set_full(new GridCartesian(GridDefaultLatt(),GridDefaultSimd(Ndimensions, vComplex::Nsimd()),GridDefaultMpi()));
+  ScalarGrid.set_full(new GridCartesian(GridDefaultLatt(),GridDefaultSimd(Ndimensions, vReal::Nsimd()),GridDefaultMpi()));
   ScalarGrid.set_rb(new GridRedBlackCartesian(ScalarGrid.get_full()));
   TheHMC.Resources.AddGrid("scalar", ScalarGrid);
   std::cout << "Lattice size : " << GridDefaultLatt() << std::endl;
