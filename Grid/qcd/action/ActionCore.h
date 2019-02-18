@@ -55,7 +55,10 @@ directory
 #include <Grid/qcd/utils/Metric.h>
 #include <Grid/qcd/utils/CovariantLaplacian.h>
 
-
+////////////////////////////////////////////
+// CPN Actions
+////////////////////////////////////////////
+#include <Grid/qcd/action/CPN/CPN>
 
 
 #endif
