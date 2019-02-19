@@ -35,9 +35,9 @@ directory
 namespace Grid {
 namespace QCD {
 
-  typedef shGordonAction<ScalarImplR>                 shGordonActionR;
-  typedef shGordonAction<ScalarImplF>                 shGordonActionF;
-  typedef shGordonAction<ScalarImplD>                 shGordonActionD;
+  template<int N> using CPNActionR = CPNAction<CPNImplR<N>>;
+  template<int N> using CPNActionF = CPNAction<CPNImplF<N>>;
+  template<int N> using CPNActionD = CPNAction<CPNImplD<N>>;
 
 }
 }

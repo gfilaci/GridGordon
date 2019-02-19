@@ -7,6 +7,9 @@
 // Scalar field
 #include <Grid/qcd/utils/ScalarObjs.h>
 
+// CPN field
+#include <Grid/qcd/utils/CPNObjs.h>
+
 // Include representations
 #include <Grid/qcd/utils/SUn.h>
 #include <Grid/qcd/utils/SUnAdjoint.h>

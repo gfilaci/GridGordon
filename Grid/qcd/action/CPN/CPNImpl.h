@@ -1,3 +1,32 @@
+/*************************************************************************************
+ 
+ Grid physics library, www.github.com/paboyle/Grid
+ 
+ Source file: ./lib/qcd/action/CPN/CPNImpl.h
+ 
+ Copyright (C) 2015
+ 
+ Author: Gianluca Filaci <g.filaci@ed.ac.uk>
+ 
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ See the full license in the file "LICENSE" in the top level distribution
+ directory
+ *************************************************************************************/
+/*  END LEGAL */
+
 #ifndef CPN_IMPL
 #define CPN_IMPL
 
@@ -5,13 +34,15 @@
 namespace Grid {
   //namespace QCD {
 
-template <class S>
+template <int N, class S>
 class CPNImplTypes {
  public:
     typedef S Simd;
-
+    
+    static const int Nfull = N + QCD::Nd;
+    
     template <typename vtype>
-    using iImplField = iScalar<iScalar<iScalar<vtype> > >;
+    using iImplField = iScalar<iVector <iScalar<vtype>, Nfull > >;
 
     typedef iImplField<Simd> SiteField;
     typedef SiteField        SitePropagator;
@@ -22,82 +53,105 @@ class CPNImplTypes {
     typedef Field              FermionField;
     typedef Field              PropagatorField;
 
+    template <typename vtype>
+    using iImplGauge = iVector<iScalar<iScalar<vtype> >, QCD::Nd >;
+    typedef iImplGauge<Simd> SiteGauge;
+    typedef Lattice<SiteGauge> Gauge;
+    
+    template <typename vtype>
+    using iImplZField = iScalar<iVector<iScalar<vtype>, N> >;
+    typedef iImplZField<Simd> SiteZField;
+    typedef Lattice<SiteZField> ZField;
+    
     static inline void generate_momenta(Field& P, GridParallelRNG& pRNG){
-      gaussian(pRNG, P);
+        gaussian(pRNG, P);
+        auto Pg = CPNObs<CPNImplTypes>::extractGauge(P);
+        auto Pz = CPNObs<CPNImplTypes>::extractZField(P);
+        // momenta conjugated to the gauge field must be real
+        Pg += conjugate(Pg);
+        Pg = 0.5 * Pg;
+        P = CPNObs<CPNImplTypes>::loadGaugeZ(Pg,Pz);
     }
 
     static inline Field projectForce(Field& P){return P;}
 
     static inline void update_field(Field& P, Field& U, double ep) {
-      //std::cout << GridLogDebug << "P:\n" << P << std::endl;
-      U += P*ep;
-      //std::cout << GridLogDebug << "U:\n" << U << std::endl;
+      Complex im(0.,1.);
+      decltype(QCD::peekSpin(U,0)) Ptmp(U._grid), Utmp(U._grid);
+      
+      for(int i=0; i<QCD::Nd; i++){
+          Ptmp = QCD::peekSpin(P,i);
+          Utmp = QCD::peekSpin(U,i);
+          Utmp = exp(im*ep*Ptmp) * Utmp;
+          QCD::pokeSpin(U,Utmp,i);
+      }
+      for(int i=QCD::Nd; i<Nfull; i++){
+          Ptmp = QCD::peekSpin(P,i);
+          Utmp = QCD::peekSpin(U,i);
+          Utmp += ep*Ptmp;
+          QCD::pokeSpin(U,Utmp,i);
+      }
+      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
     }
 
     static inline RealD FieldSquareNorm(Field& U) {
-      return (- sum(trace(U*U))/2.0);
+        RealD res = 0;
+        decltype(QCD::peekSpin(U,0)) tmp(U._grid);
+        for(int i=0; i<Nfull; i++){
+            tmp = QCD::peekSpin(U,i);
+            res -= real(sum(trace(conjugate(tmp)*tmp)))/2.0;
+        }
+      return res;
     }
 
     static inline void HotConfiguration(GridParallelRNG &pRNG, Field &U) {
-     random(pRNG, U);
+        random(pRNG, U);
+        U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
     }
 
     static inline void TepidConfiguration(GridParallelRNG &pRNG, Field &U) {
       random(pRNG, U);
       U *= 0.01;
+      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
     }
 
     static inline void ColdConfiguration(GridParallelRNG &pRNG, Field &U) {
-      U = 0.0;
-      //std::cout << GridLogDebug << "Initial U:\n" << U << std::endl;
+      decltype(QCD::peekSpin(U,0)) tmp(U._grid);
+      tmp = 1.;
+      for(int i=0; i<QCD::Nd+1; i++){
+          QCD::pokeSpin(U,tmp,i);
+      }
+      tmp = zero;
+      for(int i=QCD::Nd+1; i<Nfull; i++){
+          QCD::pokeSpin(U,tmp,i);
+      }
     }
 
     static void MomentumSpacePropagator(Field &out, RealD m)
     {
-      GridBase           *grid = out._grid;
-      Field              kmu(grid), one(grid);
-      const unsigned int nd    = grid->_ndimension;
-      std::vector<int>   &l    = grid->_fdimensions;
-
-      one = Complex(1.0,0.0);
-      out = m*m;
-      for(int mu = 0; mu < nd; mu++)
-      {
-        Real twoPiL = M_PI*2./l[mu];
-
-        LatticeCoordinate(kmu,mu);
-        kmu = 2.*sin(.5*twoPiL*kmu);
-        out = out + kmu*kmu;
-      }
-      out = one/out;
+        std::cout << GridLogError << "MomentumSpacePropagator not implemented for CPNImplTypes" << std::endl;
+        assert(0);
     }
 
     static void FreePropagator(const Field &in, Field &out,
                                const Field &momKernel)
     {
-      FFT   fft((GridCartesian *)in._grid);
-      Field inFT(in._grid);
-
-      fft.FFT_all_dim(inFT, in, FFT::forward);
-      inFT = inFT*momKernel;
-      fft.FFT_all_dim(out, inFT, FFT::backward);
+        std::cout << GridLogError << "FreePropagator not implemented for CPNImplTypes" << std::endl;
+        assert(0);
     }
 
     static void FreePropagator(const Field &in, Field &out, RealD m)
     {
-      Field momKernel(in._grid);
-
-      MomentumSpacePropagator(momKernel, m);
-      FreePropagator(in, out, momKernel);
+        std::cout << GridLogError << "FreePropagator not implemented for CPNImplTypes" << std::endl;
+        assert(0);
     }
 
   };
 
-
-  typedef CPNImplTypes<vComplex> CPNImplR;
-  typedef CPNImplTypes<vComplexF> CPNImplF;
-  typedef CPNImplTypes<vComplexD> CPNImplD;
-
+  template<int N> using CPNImplR = CPNImplTypes<N, vComplex>;
+  template<int N> using CPNImplF = CPNImplTypes<N, vComplexF>;
+  template<int N> using CPNImplD = CPNImplTypes<N, vComplexD>;
+  
 }
 
 #endif

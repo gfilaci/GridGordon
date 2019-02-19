@@ -54,20 +54,51 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
     virtual void refresh(const Field &U, GridParallelRNG &pRNG) {}  // noop as no pseudoferms
 
     virtual RealD S(const Field &p) {
-//      return (mass_square * 0.5 + QCD::Nd) * ScalarObs<Impl>::sumphisquared(p) +
-//    (lambda / 24.) * ScalarObs<Impl>::sumphifourth(p) +
-//    ScalarObs<Impl>::sumphider(p);
+        typename Impl::ZField zshifted(p._grid);
+        decltype(QCD::peekSpin(p,0)) Umu(p._grid);
+        
+        typename Impl::ZField z = CPNObs<Impl>::extractZField(p);
+        RealD res = 0;
+        for (int mu=0; mu<QCD::Nd; mu++) {
+            zshifted = Cshift(z,mu,1);
+            Umu = QCD::peekSpin(p,mu);
+            z = conjugate(Umu) * z;
+            res += real(innerProduct(zshifted,z));
+        }
+        return (-2./g)*res;
     };
 
     virtual void deriv(const Field &p,
                        Field &force) {
-//      Field tmp(p._grid);
-//      Field p2(p._grid);
-//      ScalarObs<Impl>::phisquared(p2, p);
-//      tmp = -(Cshift(p, 0, -1) + Cshift(p, 0, 1));
-//      for (int mu = 1; mu < QCD::Nd; mu++) tmp -= Cshift(p, mu, -1) + Cshift(p, mu, 1);
-//
-//      force =+(mass_square + 2. * QCD::Nd) * p + (lambda / 6.) * p2 * p + tmp;
+        typename Impl::ZField zshifted(p._grid), Fz(p._grid);
+        typename Impl::Gauge Fg(p._grid);
+        decltype(QCD::peekSpin(p,0)) Umu(p._grid);
+        
+        typename Impl::ZField z = CPNObs<Impl>::extractZField(p);
+        
+        // FIXME: inefficent, both loops can be reduced to one
+        
+        Fz = zero;
+        for (int mu=0; mu<QCD::Nd; mu++) {
+            Umu = QCD::peekSpin(p,mu);
+            zshifted = Cshift(z,mu,1);
+            Fz += Umu * zshifted;
+            
+            zshifted = Cshift(z,mu,-1);
+            Umu = Cshift(Umu,mu,-1);
+            Fz += conjugate(Umu) * zshifted;
+        }
+        Fz = (-1./g)*conjugate(Fz);
+        
+        for (int mu=0; mu<QCD::Nd; mu++) {
+            zshifted = Cshift(z,mu,1);
+            Umu = QCD::peekSpin(p,mu);
+            zshifted = Umu * zshifted;
+            Umu = (2./g)*imag(innerProduct(z,zshifted));
+            QCD::pokeSpin(Fz,Umu,mu);
+        }
+        
+        force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);
     }
 };
 
