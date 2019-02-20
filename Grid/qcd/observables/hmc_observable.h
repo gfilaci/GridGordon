@@ -49,5 +49,6 @@ class HmcObservable {
 #include "exp_scalar.h"
 #include "two_point.h"
 #include "vev.h"
+#include "CPNenergy.h"
 
 #endif  //  HMC_OBSERVABLE_H

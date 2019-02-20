@@ -93,7 +93,7 @@ class CPNImplTypes {
           QCD::pokeSpin(U,Utmp,i);
       }
       
-      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U); // to be understood...
+      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
     }
 
     static inline RealD FieldSquareNorm(Field& U) {

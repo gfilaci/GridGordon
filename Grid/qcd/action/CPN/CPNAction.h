@@ -39,14 +39,17 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
     INHERIT_FIELD_TYPES(Impl);
 
  private:
-    RealD g;
-
+    RealD beta;
+    RealD factor;
+    
  public:
-    CPNAction(RealD g_) : g(g_) {}
+    CPNAction(RealD beta_) : beta(beta_) {
+        factor = Impl::NCPN * beta_;
+    }
 
     virtual std::string LogParameters() {
       std::stringstream sstream;
-      sstream << GridLogMessage << "[CPNAction] g : " << g << std::endl;
+      sstream << GridLogMessage << "[CPNAction] beta : " << beta << std::endl;
       return sstream.str();
     }
     virtual std::string action_name() {return "CPNAction";}
@@ -65,7 +68,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
             z = conjugate(Umu) * z;
             res += real(innerProduct(zshifted,z));
         }
-        return (-2./g)*res;
+        return (-2.*factor)*res;
     };
 
     virtual void deriv(const Field &p,
@@ -88,7 +91,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
             Umu = Cshift(Umu,mu,-1);
             Fz += conjugate(Umu) * zshifted;
         }
-        Fz = (-1./g)*conjugate(Fz);
+        Fz = (-factor)*conjugate(Fz);
         
         for (int mu=0; mu<QCD::Nd; mu++) {
             zshifted = Cshift(z,mu,1);
@@ -104,7 +107,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
                 sp += tmpsp1*tmpsp2;
             }
             
-            Umu = (2./g)*imag(sp);
+            Umu = (2.*factor)*imag(sp);
             QCD::pokeLorentz(Fg,Umu,mu);
         }
         force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);

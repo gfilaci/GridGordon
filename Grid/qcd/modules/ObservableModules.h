@@ -134,6 +134,20 @@ public:
 };
 
 template < class Impl >
+class CPNEnergyMod: public ObservableModule<CPNEnergyLogger<Impl>, CPNEnergyParameters>{
+        typedef ObservableModule<CPNEnergyLogger<Impl>, CPNEnergyParameters> ObsBase;
+        using ObsBase::ObsBase; // for constructors
+        
+        // acquire resource
+        virtual void initialize(){
+            this->ObservablePtr.reset(new CPNEnergyLogger<Impl>(this->Par_));
+        }
+    public:
+        CPNEnergyMod(CPNEnergyParameters P): ObsBase(P){}
+        CPNEnergyMod():ObsBase(){};
+};
+    
+template < class Impl >
 class PolyakovMod: public ObservableModule<PolyakovLogger<Impl>, NoParameters>{
   typedef ObservableModule<PolyakovLogger<Impl>, NoParameters> ObsBase;
   using ObsBase::ObsBase; // for constructors

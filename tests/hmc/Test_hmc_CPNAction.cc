@@ -27,20 +27,19 @@ See the full license in the file "LICENSE" in the top level distribution directo
 /*  END LEGAL */
 #include <Grid/Grid.h>
 
-//namespace Grid {
-//class ScalarActionParameters : Serializable {
-// public:
-//  GRID_SERIALIZABLE_CLASS_MEMBERS(ScalarActionParameters,
-//    double, mu,
-//    double, b);
-//
-//    template <class ReaderClass >
-//  ScalarActionParameters(Reader<ReaderClass>& Reader){
-//    read(Reader, "ScalarAction", *this);
-//  }
-//
-//};
-//}
+namespace Grid {
+class CPNActionParameters : Serializable {
+ public:
+  GRID_SERIALIZABLE_CLASS_MEMBERS(CPNActionParameters,
+    double, beta);
+
+    template <class ReaderClass >
+  CPNActionParameters(Reader<ReaderClass>& Reader){
+    read(Reader, "CPNAction", *this);
+  }
+
+};
+}
 
 int main(int argc, char **argv) {
   using namespace Grid;
@@ -89,22 +88,15 @@ int main(int argc, char **argv) {
   RNGModuleParameters RNGpar(Reader);
   TheHMC.Resources.SetRNGSeeds(RNGpar);
 
+  CPNActionParameters Par(Reader);
+    
   // Some online observable measurements
-//  typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
-//  ExpScalarParameters ExpParams(Reader);
-//  TheHMC.Resources.AddObservable<ExpObs>(ExpParams);
-//
-//  typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
-//  TwoPointParameters TwoPointParams(Reader);
-//  TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
-//
-//  typedef VevMod<HMCWrapper::ImplPolicy> VevObs;
-//  TheHMC.Resources.AddObservable<VevObs>();
+  typedef CPNEnergyMod<HMCWrapper::ImplPolicy> EnergyObs;
+  TheHMC.Resources.AddObservable<EnergyObs>(Par.beta);
   ///////////////////////////////////////////
 
   // CPN Action
-//  Parameters... SPar(Reader);
-  CPNActionR<N> action(1.0);
+  CPNActionR<N> action(Par.beta);
 
 //  // Collect actions
   ActionLevel<CPNActionR<N>::Field, Representations<EmptyRep<typename CPNImplR<N>::Field> >> Level1(1);
