@@ -40,6 +40,7 @@ class CPNImplTypes {
     typedef S Simd;
     
     static const int Nfull = N + QCD::Nd;
+    static const int NCPN = N;
     
     template <typename vtype>
     using iImplField = iScalar<iVector <iScalar<vtype>, Nfull > >;
@@ -91,7 +92,8 @@ class CPNImplTypes {
           Utmp += ep*Ptmp;
           QCD::pokeSpin(U,Utmp,i);
       }
-      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
+      
+      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U); // to be understood...
     }
 
     static inline RealD FieldSquareNorm(Field& U) {

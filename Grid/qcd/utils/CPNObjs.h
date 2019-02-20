@@ -71,7 +71,7 @@ class CPNObs {
           QCD::pokeSpin(fieldout,tmp,i);
       }
       for(int i=QCD::Nd; i<Impl::Nfull; i++){
-          auto tmp = QCD::peekSpin(z,i);
+          auto tmp = QCD::peekSpin(z,i-QCD::Nd);
           QCD::pokeSpin(fieldout,tmp,i);
       }
       return fieldout;
@@ -106,12 +106,6 @@ class CPNObs {
           tmp = tmp / sqrtnorm;
           QCD::pokeSpin(fieldout,tmp,i);
       }
-//      std::cout << "**********************************************" << std::endl;
-//      std::cout << f << std::endl;
-//      std::cout << "**********************************************" << std::endl;
-//      std::cout << fieldout << std::endl;
-//      std::cout << "**********************************************" << std::endl;
-//      std::exit(0);
       return fieldout;
   }
 

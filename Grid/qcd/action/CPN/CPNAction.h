@@ -94,10 +94,19 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
             zshifted = Cshift(z,mu,1);
             Umu = QCD::peekSpin(p,mu);
             zshifted = Umu * zshifted;
-            Umu = (2./g)*imag(innerProduct(z,zshifted));
-            QCD::pokeSpin(Fz,Umu,mu);
+            
+            // perform scalar product for each lattice site
+            decltype(QCD::peekSpin(p,0)) sp(p._grid);
+            sp = zero;
+            for (int i=0; i<Impl::NCPN; i++) {
+                auto tmpsp1 = conjugate(QCD::peekSpin(z,i));
+                auto tmpsp2 = QCD::peekSpin(zshifted,i);
+                sp += tmpsp1*tmpsp2;
+            }
+            
+            Umu = (2./g)*imag(sp);
+            QCD::pokeLorentz(Fg,Umu,mu);
         }
-        
         force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);
     }
 };
