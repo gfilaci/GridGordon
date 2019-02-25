@@ -73,14 +73,13 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
 
     virtual void deriv(const Field &p,
                        Field &force) {
+        
         typename Impl::ZField zshifted(p._grid), Fz(p._grid);
         typename Impl::Gauge Fg(p._grid);
-        decltype(QCD::peekSpin(p,0)) Umu(p._grid);
+        decltype(QCD::peekSpin(p,0)) Umu(p._grid), sp(p._grid);
         
         typename Impl::ZField z = CPNObs<Impl>::extractZField(p);
         
-        
-        decltype(QCD::peekSpin(p,0)) sp(p._grid);
         Fz = zero;
         for (int mu=0; mu<QCD::Nd; mu++) {
             // peek gauge field
@@ -114,6 +113,8 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
         }
         
         Fz = (-factor)*conjugate(Fz);
+        // project the force on the tangent space
+//        Fz = CPNObs<Impl>::ProjectOrthogonalCPN(Fz,z);
         
         force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);
     }
