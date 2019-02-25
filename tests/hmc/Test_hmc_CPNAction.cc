@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   using namespace Grid;
   using namespace Grid::QCD;
 
-  const int N = 2;
+  const int N = 10;
 
   typedef Grid::JSONReader       Serialiser;
 
