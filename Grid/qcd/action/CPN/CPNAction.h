@@ -114,7 +114,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
         
         Fz = (-factor)*conjugate(Fz);
         // project the force on the tangent space
-//        Fz = CPNObs<Impl>::ProjectOrthogonalCPN(Fz,z);
+        Fz = CPNObs<Impl>::ProjectOrthogonalCPN(Fz,z);
         
         force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);
     }

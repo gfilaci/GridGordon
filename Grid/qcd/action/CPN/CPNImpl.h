@@ -81,23 +81,48 @@ class CPNImplTypes {
     static inline Field projectForce(Field& P){return P;}
 
     static inline void update_field(Field& P, Field& U, double ep) {
-      Complex im(0.,1.);
-      decltype(QCD::peekSpin(U,0)) Ptmp(U._grid), Utmp(U._grid);
-      
-      for(int i=0; i<QCD::Nd; i++){
-          Ptmp = QCD::peekSpin(P,i);
-          Utmp = QCD::peekSpin(U,i);
-          Utmp = exp(im*ep*Ptmp) * Utmp;
-          QCD::pokeSpin(U,Utmp,i);
-      }
-      for(int i=QCD::Nd; i<Nfull; i++){
-          Ptmp = QCD::peekSpin(P,i);
-          Utmp = QCD::peekSpin(U,i);
-          Utmp += ep*Ptmp;
-          QCD::pokeSpin(U,Utmp,i);
-      }
-      
-      U = CPNObs<CPNImplTypes>::ProjectOnCPN(U);
+
+        decltype(QCD::peekSpin(U,0)) Ptmp(U._grid), Pcos(U._grid), Psin(U._grid), Pabs(U._grid), Utmp(U._grid), Uold(U._grid);
+        
+        Complex im(0.,1.);
+        for(int i=0; i<QCD::Nd; i++){
+            Ptmp = QCD::peekSpin(P,i);
+            Utmp = QCD::peekSpin(U,i);
+            Utmp = exp(im*ep*Ptmp) * Utmp;
+            QCD::pokeSpin(U,Utmp,i);
+        }
+        
+        Pabs = zero;
+        for(int i=QCD::Nd; i<Nfull; i++){
+            Ptmp = QCD::peekSpin(P,i);
+            Pabs += conjugate(Ptmp)*Ptmp;
+        }
+        Pabs = sqrt(Pabs);
+        Psin = sin(ep*Pabs);
+        Pcos = cos(ep*Pabs);
+        
+        for(int i=QCD::Nd; i<Nfull; i++){
+            Ptmp = QCD::peekSpin(P,i);
+            Uold = QCD::peekSpin(U,i);
+            
+            // update
+            Utmp =  Pcos * Uold        + Psin * Ptmp / Pabs;
+            Ptmp = -Pabs * Psin * Uold + Pcos * Ptmp;
+            
+            QCD::pokeSpin(U,Utmp,i);
+            QCD::pokeSpin(P,Ptmp,i);
+        }
+        
+        // UPDATE CHECK
+//        auto Ug = CPNObs<CPNImplTypes>::extractGauge(U);
+//        auto Uz = CPNObs<CPNImplTypes>::extractZField(U);
+//        auto Pg = CPNObs<CPNImplTypes>::extractGauge(P);
+//        auto Pz = CPNObs<CPNImplTypes>::extractZField(P);
+//        std::cout << "U belongs to U(1)     : " << norm2(Ug)/(double)QCD::Nd/(double)U._grid->gSites() - 1. << std::endl;
+//        std::cout << "z belongs to CPN      : " << norm2(Uz)/(double)U._grid->gSites() - 1. << std::endl;
+//        Pg = 0.5 * ( Pg - conjugate(Pg) );
+//        std::cout << "PU is real            : " << norm2(Pg)/(double)QCD::Nd/(double)U._grid->gSites() << std::endl;
+//        std::cout << "Pz is orthogonal to z : " << innerProduct(Uz,Pz)/(double)U._grid->gSites() << std::endl;
     }
 
     static inline RealD FieldSquareNorm(Field& U) {
