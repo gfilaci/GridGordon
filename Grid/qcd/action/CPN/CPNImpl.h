@@ -74,6 +74,10 @@ class CPNImplTypes {
         P = CPNObs<CPNImplTypes>::loadGaugeZ(Pg,Pz);
     }
 
+    static inline void project_momenta(Field& P, const Field& U){
+        P = CPNObs<CPNImplTypes>::ProjectOrthogonalCPN(P,U);
+    }
+
     static inline Field projectForce(Field& P){return P;}
 
     static inline void update_field(Field& P, Field& U, double ep) {

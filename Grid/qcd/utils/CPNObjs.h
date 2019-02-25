@@ -78,7 +78,7 @@ class CPNObs {
   }
 
   //////////////////////////////////////////////////
-  // project on CPN
+  // project on CPN group
   //////////////////////////////////////////////////
     
   static typename Impl::Field ProjectOnCPN(const typename Impl::Field &f) {
@@ -107,6 +107,21 @@ class CPNObs {
           QCD::pokeSpin(fieldout,tmp,i);
       }
       return fieldout;
+  }
+
+  //////////////////////////////////////////////////
+  // project on space orthogonal to CPN
+  //////////////////////////////////////////////////
+  template <class T>
+  static T ProjectOrthogonalCPN(const T &v, const T &z) {
+      return v - outerProduct(z,z) * v;
+  }
+  static typename Impl::Field ProjectOrthogonalCPN(const typename Impl::Field &v, const typename Impl::Field &f) {
+      auto U = CPNObs<Impl>::extractGauge(v);
+      auto zv = CPNObs<Impl>::extractZField(v);
+      auto zf = CPNObs<Impl>::extractZField(f);
+      zv = ProjectOrthogonalCPN(zv,zf);
+      return CPNObs<Impl>::loadGaugeZ(U, zv);
   }
 
 };

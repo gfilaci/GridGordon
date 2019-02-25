@@ -97,6 +97,8 @@ public:
     }
   }
 
+  static inline void project_momenta(Field& P, const Field& U){}
+
   static inline Field projectForce(Field &P) { return Ta(P); }
 
   static inline void update_field(Field& P, Field& U, double ep){

@@ -224,7 +224,8 @@ class Integrator {
     std::cout << GridLogIntegrator << "Integrator refresh\n";
 
     FieldImplementation::generate_momenta(P, pRNG);
-
+    FieldImplementation::project_momenta(P, U);
+    
     // Update the smeared fields, can be implemented as observer
     // necessary to keep the fields updated even after a reject
     // of the Metropolis
