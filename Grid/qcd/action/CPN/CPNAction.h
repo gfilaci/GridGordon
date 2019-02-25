@@ -79,37 +79,42 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
         
         typename Impl::ZField z = CPNObs<Impl>::extractZField(p);
         
-        // FIXME: inefficent, both loops can be reduced to one
         
+        decltype(QCD::peekSpin(p,0)) sp(p._grid);
         Fz = zero;
         for (int mu=0; mu<QCD::Nd; mu++) {
+            // peek gauge field
             Umu = QCD::peekSpin(p,mu);
+            // shift field in direction +mu
             zshifted = Cshift(z,mu,1);
+            
+            // contribution to Fz
             Fz += Umu * zshifted;
             
-            zshifted = Cshift(z,mu,-1);
-            Umu = Cshift(Umu,mu,-1);
-            Fz += conjugate(Umu) * zshifted;
-        }
-        Fz = (-factor)*conjugate(Fz);
-        
-        for (int mu=0; mu<QCD::Nd; mu++) {
-            zshifted = Cshift(z,mu,1);
-            Umu = QCD::peekSpin(p,mu);
+            /****************************/
+            // force for gauge field
             zshifted = Umu * zshifted;
-            
-            // perform scalar product for each lattice site
-            decltype(QCD::peekSpin(p,0)) sp(p._grid);
+            // scalar product for each lattice site
+            // (could reduce the number of peekSpin?)
             sp = zero;
             for (int i=0; i<Impl::NCPN; i++) {
                 auto tmpsp1 = conjugate(QCD::peekSpin(z,i));
                 auto tmpsp2 = QCD::peekSpin(zshifted,i);
-                sp += tmpsp1*tmpsp2;
+                sp += tmpsp1 * tmpsp2;
             }
+            QCD::pokeLorentz(Fg,(2.*factor)*imag(sp),mu);
+            /****************************/
             
-            Umu = (2.*factor)*imag(sp);
-            QCD::pokeLorentz(Fg,Umu,mu);
+            // shift field in direction -mu
+            zshifted = Cshift(z,mu,-1);
+            Umu = Cshift(Umu,mu,-1);
+            
+            // contribution to Fz
+            Fz += conjugate(Umu) * zshifted;
         }
+        
+        Fz = (-factor)*conjugate(Fz);
+        
         force = CPNObs<Impl>::loadGaugeZ(Fg, Fz);
     }
 };
