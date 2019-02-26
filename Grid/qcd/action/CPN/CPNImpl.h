@@ -130,9 +130,9 @@ class CPNImplTypes {
         decltype(QCD::peekSpin(U,0)) tmp(U._grid);
         for(int i=0; i<Nfull; i++){
             tmp = QCD::peekSpin(U,i);
-            res -= real(sum(trace(conjugate(tmp)*tmp)))/2.0;
+            res += norm2(tmp);
         }
-      return res;
+      return -0.5*res;
     }
 
     static inline void HotConfiguration(GridParallelRNG &pRNG, Field &U) {

@@ -44,7 +44,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
     
  public:
     CPNAction(RealD beta_) : beta(beta_) {
-        factor = Impl::NCPN * beta_;
+        factor = 2. * Impl::NCPN * beta_;
     }
 
     virtual std::string LogParameters() {
@@ -57,7 +57,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
     virtual void refresh(const Field &U, GridParallelRNG &pRNG) {}  // noop as no pseudoferms
 
     virtual RealD S(const Field &p) {
-        typename Impl::ZField zshifted(p._grid);
+        typename Impl::ZField zshifted(p._grid), ztmp(p._grid);
         decltype(QCD::peekSpin(p,0)) Umu(p._grid);
         
         typename Impl::ZField z = CPNObs<Impl>::extractZField(p);
@@ -65,10 +65,10 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
         for (int mu=0; mu<QCD::Nd; mu++) {
             zshifted = Cshift(z,mu,1);
             Umu = QCD::peekSpin(p,mu);
-            z = conjugate(Umu) * z;
-            res += real(innerProduct(zshifted,z));
+            ztmp = conjugate(Umu) * z;
+            res += real(innerProduct(zshifted,ztmp));
         }
-        return (-2.*factor)*res;
+        return (-factor)*res;
     };
 
     virtual void deriv(const Field &p,
@@ -101,7 +101,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
                 auto tmpsp2 = QCD::peekSpin(zshifted,i);
                 sp += tmpsp1 * tmpsp2;
             }
-            QCD::pokeLorentz(Fg,(2.*factor)*imag(sp),mu);
+            QCD::pokeLorentz(Fg,factor*imag(sp),mu);
             /****************************/
             
             // shift field in direction -mu
@@ -112,7 +112,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
             Fz += conjugate(Umu) * zshifted;
         }
         
-        Fz = (-factor)*conjugate(Fz);
+        Fz = (-factor)*Fz;
         // project the force on the tangent space
         Fz = CPNObs<Impl>::ProjectOrthogonalCPN(Fz,z);
         
