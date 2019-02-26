@@ -49,6 +49,7 @@ class CPNAction : public QCD::Action<typename Impl::Field> {
 
     virtual std::string LogParameters() {
       std::stringstream sstream;
+      sstream << GridLogMessage << "[CPNAction] N    : " << Impl::NCPN << std::endl;
       sstream << GridLogMessage << "[CPNAction] beta : " << beta << std::endl;
       return sstream.str();
     }

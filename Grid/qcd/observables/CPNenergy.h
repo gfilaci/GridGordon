@@ -56,19 +56,24 @@ public:
                             GridSerialRNG &sRNG,
                             GridParallelRNG &pRNG) {
         
-        typename Impl::ZField zshifted(U._grid);
-        decltype(QCD::peekSpin(U,0)) Umu(U._grid);
+        typename Impl::ZField zshifted(U._grid), ztmp(U._grid);
+        decltype(peekSpin(U,0)) Umu(U._grid);
+        
+        // the definition of the CPN energy density can be found in
+        // https://arxiv.org/pdf/1706.04443.pdf
+        // or
+        // https://arxiv.org/pdf/1508.07270.pdf
         
         typename Impl::ZField z = CPNObs<Impl>::extractZField(U);
         RealD res = 0;
-        for (int mu=0; mu<QCD::Nd; mu++) {
+        for (int mu=0; mu<Nd; mu++) {
             zshifted = Cshift(z,mu,1);
-            Umu = QCD::peekSpin(U,mu);
-            z = conjugate(Umu) * z;
-            res += real(innerProduct(zshifted,z));
+            Umu = peekSpin(U,mu);
+            ztmp = conjugate(Umu) * z;
+            res += real(innerProduct(zshifted,ztmp));
         }
         
-        res = (-2.*Impl::NCPN*Pars.beta) * ( res/(double)U._grid->gSites() - 2*Nd);
+        res = (double)Nd - res/(double)U._grid->gSites();
         
         int def_prec = std::cout.precision();
         
