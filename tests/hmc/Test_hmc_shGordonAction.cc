@@ -93,15 +93,31 @@ int main(int argc, char **argv) {
 
   // Some online observable measurements
   typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
-  ExpScalarParameters ExpParams(Reader);
-  TheHMC.Resources.AddObservable<ExpObs>(ExpParams);
+  std::vector<double> phi = {M_PI/6., M_PI/12.};
+  std::vector<std::string> phiname ={"pi6","pi12"};
+  std::vector<double> rho = {1., 1.5};
+  for(int ri=0; ri<rho.size(); ri++){
+    for(int pi=0; pi<phi.size(); pi++){
+      std::stringstream stream;
+      stream << "_" << phiname[pi] << "_r" << rho[ri] << "_";
+      double a;
+      a = rho[ri]*cos(phi[pi]);
+      ExpScalarParameters ExpParamsCos(a,stream.str()+"cos");
+      TheHMC.Resources.AddObservable<ExpObs>(ExpParamsCos);
+      std::cout<< GridLogMessage << "ExpScalar observable with a=" << a << " added" <<std::endl;
+      a = rho[ri]*sin(phi[pi]);
+      ExpScalarParameters ExpParamsSin(a,stream.str()+"sin");
+      TheHMC.Resources.AddObservable<ExpObs>(ExpParamsSin);
+      std::cout<< GridLogMessage << "ExpScalar observable with a=" << a << " added" <<std::endl;
+    }
+  }
   
-  typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
-  TwoPointParameters TwoPointParams(Reader);
-  TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
+  //typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
+  //TwoPointParameters TwoPointParams(Reader);
+  //TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
     
-  typedef VevMod<HMCWrapper::ImplPolicy> VevObs;
-  TheHMC.Resources.AddObservable<VevObs>();
+  //typedef VevMod<HMCWrapper::ImplPolicy> VevObs;
+  //TheHMC.Resources.AddObservable<VevObs>();
   ///////////////////////////////////////////
 
   // Real Scalar sh-Gordon action
