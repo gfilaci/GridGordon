@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
   typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
   std::vector<double> phi = {M_PI/6., M_PI/12.};
   std::vector<std::string> phiname ={"pi6","pi12"};
-  std::vector<double> rho = {1., 1.5};
+  std::vector<double> rho = {1., 0.5};
   for(int ri=0; ri<rho.size(); ri++){
     for(int pi=0; pi<phi.size(); pi++){
       std::stringstream stream;
