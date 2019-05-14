@@ -36,7 +36,7 @@ namespace Grid {
      Using action
      S = 1/(16 pi) (Dmu phi)^2 + 2 mu cosh(bphi)
      */
-    
+
 template <class Impl>
 class shGordonAction : public QCD::Action<typename Impl::Field> {
  public:
@@ -46,6 +46,8 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
     RealD mu_param;
     RealD b_param;
     const RealD inveightpi = 1. / 8. / M_PI;
+    const RealD inv = 1. / 12. ;
+    const RealD inv_t = 1. / 3. ;
 
  public:
     shGordonAction(RealD mu_, RealD b_) : mu_param(mu_), b_param(b_) {}
@@ -61,7 +63,10 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
     virtual void refresh(const Field &U, GridParallelRNG &pRNG) {}  // noop as no pseudoferms
 
     virtual RealD S(const Field &phi) {
-      return QCD::Nd * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * sum(trace(exp(b_param*phi) + exp(-b_param*phi)))   ;
+//      return QCD::Nd * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * sum(trace(exp(b_param*phi) + exp(-b_param*phi)))   ;
+      return QCD::Nd * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * b_param*b_param*ScalarObs<Impl>::sumphisquared(phi)
+              + inv* mu_param*b_param*b_param*b_param*b_param*sum(trace(phi*phi*phi*phi)) ;
+
     };
 
     virtual void deriv(const Field &phi,
@@ -73,7 +78,8 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
         tmp = inveightpi * tmp;
 
         //std::cout << GridLogDebug << "Phi norm : " << norm2(phi) << std::endl;
-        force += tmp + b_param * mu_param * (exp(b_param*phi) - exp(-b_param*phi));
+        //force += tmp + b_param * mu_param * (exp(b_param*phi) - exp(-b_param*phi));
+        force += tmp + 2.*b_param* b_param * mu_param * phi + inv_t*mu_param*b_param*b_param*b_param*b_param*phi*phi*phi ;
         //std::cout << GridLogDebug << "Force tmp :\n" << tmp << std::endl;
         //std::cout << GridLogDebug << "Force total after :\n" << force << std::endl;
     }
