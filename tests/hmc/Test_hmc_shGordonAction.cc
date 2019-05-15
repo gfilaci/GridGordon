@@ -92,10 +92,10 @@ int main(int argc, char **argv) {
   TheHMC.Resources.SetRNGSeeds(RNGpar);
 
   // Some online observable measurements
-  typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
+  /*  typedef ExpScalarMod<HMCWrapper::ImplPolicy> ExpObs;
   ExpScalarParameters ExpParams(Reader);
   TheHMC.Resources.AddObservable<ExpObs>(ExpParams);
-  
+  */
   typedef TwoPointMod<HMCWrapper::ImplPolicy> TwoPointObs;
   TwoPointParameters TwoPointParams(Reader);
   TheHMC.Resources.AddObservable<TwoPointObs>(TwoPointParams);
