@@ -33,8 +33,22 @@
 namespace Grid {
 
     /*
-     Using action
-     S = 1/(16 pi) (Dmu phi)^2 + 2 mu cosh(bphi)
+     The simulated action is
+     
+     S = 1/(16 pi) (Dmu phi)^2 + 2 mu cosh(b phi) + eta^2/(16 pi) phi^2
+     
+     With the redefinitions
+     
+     psi  = phi / sqrt(8 pi)
+     g    = sqrt(8 pi) b
+     m0^2 = 16 pi mu b
+     
+     it becomes
+     
+     S = 1/2 (Dmu psi)^2 + m0^2/g^2 cosh(g psi) + eta^2/2 psi^2 =
+       = 1/2 (Dmu psi)^2 + (m0^2+eta^2)/2 psi^2 + ...
+     
+     so that the bare mass is M0^2 = m0^2+eta^2
      */
     
 template <class Impl>
@@ -45,15 +59,17 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
  private:
     RealD mu_param;
     RealD b_param;
+    RealD eta_param;
     const RealD inveightpi = 1. / 8. / M_PI;
 
  public:
-    shGordonAction(RealD mu_, RealD b_) : mu_param(mu_), b_param(b_) {}
+    shGordonAction(RealD mu_, RealD b_, RealD eta_=0) : mu_param(mu_), b_param(b_), eta_param(eta_) {}
 
     virtual std::string LogParameters() {
       std::stringstream sstream;
-      sstream << GridLogMessage << "[shGordonAction] mu     : " << mu_param << std::endl;
-      sstream << GridLogMessage << "[shGordonAction] b      : " << b_param  << std::endl;
+      sstream << GridLogMessage << "[shGordonAction] mu     : " << mu_param  << std::endl;
+      sstream << GridLogMessage << "[shGordonAction] b      : " << b_param   << std::endl;
+      sstream << GridLogMessage << "[shGordonAction] eta    : " << eta_param << std::endl;
       return sstream.str();
     }
     virtual std::string action_name() {return "shGordonAction";}
@@ -61,14 +77,14 @@ class shGordonAction : public QCD::Action<typename Impl::Field> {
     virtual void refresh(const Field &U, GridParallelRNG &pRNG) {}  // noop as no pseudoferms
 
     virtual RealD S(const Field &phi) {
-      return QCD::Nd * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * sum(trace(exp(b_param*phi) + exp(-b_param*phi)))   ;
+      return (0.5*eta_param*eta_param + QCD::Nd) * inveightpi * ScalarObs<Impl>::sumphisquared(phi) + inveightpi * ScalarObs<Impl>::sumphider(phi) + mu_param * sum(trace(exp(b_param*phi) + exp(-b_param*phi)))  ;
     };
 
     virtual void deriv(const Field &phi,
                        Field &force) {
         //std::cout << GridLogDebug << "Force total before :\n" << force << std::endl;
         Field tmp(phi._grid);
-        tmp = 2.0 * QCD::Nd*phi;
+        tmp = (eta_param*eta_param + 2.0*QCD::Nd)*phi;
         for (int mu = 0; mu < QCD::Nd; mu++) tmp -= Cshift(phi, mu, 1) + Cshift(phi, mu, -1);
         tmp = inveightpi * tmp;
 
